@@ -1,4 +1,4 @@
-module.exports = async (context) => {
+module.exports = async (github, context) => {
     const repo = context.repo;
     const labels = [process.env.REQUEST_REVIEW_LABEL];
     const state = "open";

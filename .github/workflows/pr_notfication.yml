@@ -23,4 +23,4 @@ jobs:
         with:
           script: |
             const script = require('.github/workflows/actions-scripts/notifyReviewReminder');
-            await script(context);
+            await script(github, context);
