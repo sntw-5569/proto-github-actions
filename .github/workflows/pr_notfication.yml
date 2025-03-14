@@ -21,12 +21,10 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         with:
           script: |
-            import { Octokit } from "octokit";
-            const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
             const repo = context.repo;
             const labels = ["reviewing"];
             const state = "open";
-            const prs = await octokit.pulls.list({
+            const prs = await github.rest.pulls.list({
               owner: repo.owner,
               repo: repo.repo,
               state: state,
