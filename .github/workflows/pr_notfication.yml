@@ -21,7 +21,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         with:
           script: |
-            const { Octokit } = require("@octokit/rest");
+            import { Octokit } from "octokit";
             const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
             const repo = context.repo;
             const labels = ["reviewing"];
