@@ -22,5 +22,5 @@ jobs:
           TARGET_LABEL: ${{ secrets.REQUEST_REVIEW_LABEL }}
         with:
           script: |
-            const script = require('./actions-scripts/notifyReviewReminder');
+            const script = require('.github/workflows/actions-scripts/notifyReviewReminder');
             await script(context);
