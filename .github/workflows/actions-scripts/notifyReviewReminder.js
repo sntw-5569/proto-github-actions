@@ -38,15 +38,15 @@ module.exports = async (github, context) => {
     }
 
     // PRの情報を整形
-    const prefix = `:インフォメーション: ${repo.repo} PR状況のお知らせ :ご案内:\n`;
+    const prefix = `ℹ️ ${repo.repo} PR状況のお知らせ 💁\n`;
     let prDetails = "";
     let message = `${prefix}レビュー待ちのプルリクエストはありません :無人島:`;
 
     if (unapprovedPrs.length > 0) {
         prDetails = unapprovedPrs.map(pr => {
-            return ` [${pr.title}](${pr.html_url}) by ${pr.user.avatar_url} (${pr.user.login})`;
+            return ` <${pr.html_url} ${pr.title}> by (${pr.user.login})`;
         }).join("\n");
-        message = `${prefix}:警告: 承認者2名未満のPR\n${prDetails}`;
+        message = `${prefix}⚠️ 承認者2名未満のPR\n${prDetails}`;
         console.log(`${unapprovedPrs.length}件のプルリクエストについて通知します`);
     } else {
         console.log("通知対象のプルリクエストはありません");
@@ -58,7 +58,7 @@ module.exports = async (github, context) => {
             "Content-Type": "application/json",
         },
         body: JSON.stringify({
-            text: prefix,
+            text: "未承認PRが" + unapprovedPrs.length > 0 ? "あります" : "ありません",
             blocks: [
                 {
                     type: "section",
@@ -68,8 +68,8 @@ module.exports = async (github, context) => {
                     },
                 },
             ],
-            username: "GitHub PR通知",
-            icon_emoji: ":github:",
+            username: "PR未承認案内",
+            icon_emoji: ":github-octocat:",
         }),
     });
 
