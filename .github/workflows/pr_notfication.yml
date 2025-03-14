@@ -67,6 +67,7 @@ jobs:
               console.log(`${unapprovedPrs.length}件のプルリクエストについて通知しました`);
             } else {
               console.log("通知対象のプルリクエストはありません");
+              return;
             }
             const message = `Unapproved Pull Requests:\n${prUrls}`;
             const response = await fetch(process.env.SLACK_WEBHOOK_URL, {
