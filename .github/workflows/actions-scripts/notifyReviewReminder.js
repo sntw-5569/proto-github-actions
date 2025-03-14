@@ -44,7 +44,7 @@ module.exports = async (github, context) => {
 
     if (unapprovedPrs.length > 0) {
         prDetails = unapprovedPrs.map(pr => {
-            return ` ${pr.html_url} ${pr.title} by ${pr.user.avatar_url} (${pr.user.id})`;
+            return ` [${pr.title}](${pr.html_url}) by ${pr.user.avatar_url} (${pr.user.login})`;
         }).join("\n");
         message = `${prefix}:警告: 承認者2名未満のPR\n${prDetails}`;
         console.log(`${unapprovedPrs.length}件のプルリクエストについて通知します`);
@@ -57,7 +57,20 @@ module.exports = async (github, context) => {
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({ text: message }),
+        body: JSON.stringify({
+            text: prefix,
+            blocks: [
+                {
+                    type: "section",
+                    text: {
+                        type: "mrkdwn",
+                        text: message,
+                    },
+                },
+            ],
+            username: "GitHub PR通知",
+            icon_emoji: ":github:",
+        }),
     });
 
     if (!response.ok) {
