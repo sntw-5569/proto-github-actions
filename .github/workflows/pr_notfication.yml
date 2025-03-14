@@ -21,5 +21,5 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         with:
           script: |
-            const script = require('./actions-scripts/notifyReviewReminder');
+            const script = require('.github/workflows/actions-scripts/notifyReviewReminder');
             await script(context);
