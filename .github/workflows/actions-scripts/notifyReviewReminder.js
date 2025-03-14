@@ -1,6 +1,6 @@
 module.exports = async (github, context) => {
     const repo = context.repo;
-    const targetLabel = process.env.REQUEST_REVIEW_LABEL;
+    const targetLabel = `${process.env.REQUEST_REVIEW_LABEL}`;
     
     const prs = await github.rest.pulls.list({
         owner: repo.owner,
