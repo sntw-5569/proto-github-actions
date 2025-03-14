@@ -43,7 +43,7 @@ module.exports = async (github, context) => {
 
     if (unapprovedPrs.length > 0) {
         prDetailText = unapprovedPrs.map(pr => {
-            return ` <${pr.html_url}|${pr.title}> by (${pr.user.login})`;
+            return `・ <${pr.html_url}|${pr.title}> by (${pr.user.login})`;
         }).join("\n");
         message = `${prefix}⚠️ 承認者2名未満のPR\n${prDetailText}`;
         console.log(`${unapprovedPrs.length}件のプルリクエストについて通知します`);
