@@ -1,13 +1,11 @@
 module.exports = async (github, context) => {
     const repo = context.repo;
-    const labels = [process.env.REQUEST_REVIEW_LABEL];
-    const state = "open";
-
+    
     const prs = await github.rest.pulls.list({
         owner: repo.owner,
         repo: repo.repo,
-        state: state,
-        labels: labels.join(","),
+        state: "open",
+        labels: process.env.REQUEST_REVIEW_LABEL,
     });
 
     // 各PRのレビュー状態を確認
@@ -40,7 +38,7 @@ module.exports = async (github, context) => {
     // PRの情報を整形
     const prefix = `ℹ️ ${repo.repo} PR状況のお知らせ 💁\n\n`;
     let prDetails = "";
-    let message = `${prefix}レビュー待ちのプルリクエストはありません :無人島:`;
+    let message = `${prefix}レビュー待ちのプルリクエストはありません 🏝️`;
 
     if (unapprovedPrs.length > 0) {
         prDetails = unapprovedPrs.map(pr => {
