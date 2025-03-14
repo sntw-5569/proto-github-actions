@@ -1,10 +1,8 @@
 module.exports = async (context) => {
     const repo = context.repo;
-    const labels = ["reviewing"];
+    const labels = [process.env.REQUEST_REVIEW_LABEL];
     const state = "open";
-
-    // オープン状態で「reviewing」ラベルがついているPRを取得
-    const prs = await octokit.pulls.list({
+    const prs = await github.rest.pulls.list({
         owner: repo.owner,
         repo: repo.repo,
         state: state,
@@ -14,7 +12,14 @@ module.exports = async (context) => {
     // 各PRのレビュー状態を確認
     const unapprovedPrs = [];
     for (const pr of prs.data) {
-        const reviews = await octokit.pulls.listReviews({
+        // PRのラベルを確認
+        const prLabels = pr.labels.map(label => label.name);
+        if (!prLabels.includes("reviewing")) {
+            continue;
+        }
+
+        // レビュー情報を取得
+        const reviews = await github.rest.pulls.listReviews({
             owner: repo.owner,
             repo: repo.repo,
             pull_number: pr.number
@@ -31,49 +36,27 @@ module.exports = async (context) => {
         }
     }
 
-    // 通知対象のPRがある場合、Slackに通知
+    // PRの情報を整形
+    const prDetails = unapprovedPrs.map(pr => {
+        return `• ${pr.html_url} #${pr.number}: ${pr.title} by ${pr.user.login}`;
+    }).join("\n");
+
     if (unapprovedPrs.length > 0) {
-        const slackWebhookUrl = process.env.SLACK_WEBHOOK_URL;
-
-        // PRの情報を整形
-        const prDetails = unapprovedPrs.map(pr => {
-            return `• <${pr.html_url}|#${pr.number}: ${pr.title}> by ${pr.user.login}`;
-        }).join("\n");
-
-        const message = {
-            blocks: [
-                {
-                    type: "section",
-                    text: {
-                        type: "mrkdwn",
-                        text: "🔍 *Approveが2件未満の「reviewing」ラベルがついているプルリクエスト*"
-                    }
-                },
-                {
-                    type: "section",
-                    text: {
-                        type: "mrkdwn",
-                        text: prDetails
-                    }
-                }
-            ]
-        };
-
-        // Slackに通知を送信
-        const response = await fetch(slackWebhookUrl, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(message),
-        });
-
-        if (!response.ok) {
-            throw new Error(`Slackへの通知に失敗しました: ${response.statusText}`);
-        }
-
         console.log(`${unapprovedPrs.length}件のプルリクエストについて通知しました`);
     } else {
         console.log("通知対象のプルリクエストはありません");
+        return;
+    }
+    const message = `Unapproved Pull Requests:\n${prUrls}`;
+    const response = await fetch(process.env.SLACK_WEBHOOK_URL, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ text: message }),
+    });
+
+    if (!response.ok) {
+        throw new Error(`Failed to send message to Slack: ${response.statusText}`);
     }
 }
