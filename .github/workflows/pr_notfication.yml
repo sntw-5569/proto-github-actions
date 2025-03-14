@@ -6,36 +6,50 @@ on:
   workflow_dispatch:  # 手動実行
 
 jobs:
-  notify-slack:
+  notify-unapproved-prs:
     runs-on: ubuntu-latest
     steps:
-      - name: Get PR List
-        id: get-pr
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Get Pull Requests
         uses: actions/github-script@v6
         with:
           script: |
-            const prs = await github.rest.pulls.list({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              state: 'open'
-            });
-            
-            const needsReview = prs.data.filter(pr => {
-              return pr.reviews?.length < 2;
-            });
-            
-            const prList = needsReview.map(pr => {
-              return `• ${pr.title} - ${pr.html_url}`;
-            }).join('\n');
-            
-            core.setOutput('PR_LIST', prList);
+            const { Octokit } = require("@octokit/rest");
+            const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 
-      - name: Send to Slack
-        uses: actionsflow/axios@v1
-        with:
-          url: ${{ secrets.SLACK_WEBHOOK_URL }}
-          method: POST
-          body: |
-            {
-              "text": ":warning: *要レビュープルリクエスト一覧*\n以下のプルリクエストは2名未満のApproveとなっています：\n${{ env.PR_LIST }}"
+            const repo = context.repo;
+            const labels = ["reviewing"];
+            const state = "open";
+
+            const prs = await octokit.pulls.list({
+              owner: repo.owner,
+              repo: repo.repo,
+              state: state,
+              labels: labels.join(","),
+            });
+
+            const unapprovedPrs = prs.data.filter(pr => pr.requested_reviewers.length < 2);
+            const prUrls = unapprovedPrs.map(pr => pr.html_url).join("\n");
+
+            if (unapprovedPrs.length > 0) {
+              const slackWebhookUrl = process.env.SLACK_WEBHOOK_URL;
+              const message = `Unapproved Pull Requests:\n${prUrls}`;
+
+              const response = await fetch(slackWebhookUrl, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ text: message }),
+              });
+
+              if (!response.ok) {
+                throw new Error(`Failed to send message to Slack: ${response.statusText}`);
+              }
             }
+
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
