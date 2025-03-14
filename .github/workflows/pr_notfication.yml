@@ -28,7 +28,7 @@ jobs:
               return `• ${pr.title} - ${pr.html_url}`;
             }).join('\n');
             
-            core.setOutput('pr-list', prList);
+            core.setOutput('PR_LIST', prList);
 
       - name: Send to Slack
         uses: actionsflow/axios@v1
@@ -37,5 +37,5 @@ jobs:
           method: POST
           body: |
             {
-              "text": "テスト送信です。"
+              "text": ":warning: *要レビュープルリクエスト一覧*\n以下のプルリクエストは2名未満のApproveとなっています：\n${{ env.PR_LIST }}"
             }
