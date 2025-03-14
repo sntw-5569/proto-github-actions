@@ -1,11 +1,12 @@
 module.exports = async (github, context) => {
     const repo = context.repo;
+    const targetLabel = process.env.REQUEST_REVIEW_LABEL;
     
     const prs = await github.rest.pulls.list({
         owner: repo.owner,
         repo: repo.repo,
         state: "open",
-        labels: process.env.REQUEST_REVIEW_LABEL,
+        labels: targetLabel,
     });
 
     // 各PRのレビュー状態を確認
@@ -37,14 +38,14 @@ module.exports = async (github, context) => {
 
     // PRの情報を整形
     const prefix = `ℹ️ ${repo.repo} PR状況のお知らせ 💁\n\n`;
-    let prDetails = "";
+    let prDetailText = "";
     let message = `${prefix}レビュー待ちのプルリクエストはありません 🏝️`;
 
     if (unapprovedPrs.length > 0) {
-        prDetails = unapprovedPrs.map(pr => {
+        prDetailText = unapprovedPrs.map(pr => {
             return ` <${pr.html_url}|${pr.title}> by (${pr.user.login})`;
         }).join("\n");
-        message = `${prefix}⚠️ 承認者2名未満のPR\n${prDetails}`;
+        message = `${prefix}⚠️ 承認者2名未満のPR\n${prDetailText}`;
         console.log(`${unapprovedPrs.length}件のプルリクエストについて通知します`);
     } else {
         console.log("通知対象のプルリクエストはありません");
