@@ -42,12 +42,12 @@ module.exports = async (github, context) => {
     }).join("\n");
 
     if (unapprovedPrs.length > 0) {
-        console.log(`${unapprovedPrs.length}件のプルリクエストについて通知しました`);
+        console.log(`${unapprovedPrs.length}件のプルリクエストについて通知します`);
     } else {
         console.log("通知対象のプルリクエストはありません");
         return;
     }
-    const message = `Unapproved Pull Requests:\n${prUrls}`;
+    const message = `Unapproved Pull Requests:\n${prDetails}`;
     const response = await fetch(process.env.SLACK_WEBHOOK_URL, {
         method: "POST",
         headers: {
