@@ -21,7 +21,30 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         with:
           script: |
-            const { Octokit } = require("@octokit/rest");
-            const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
-            const script = require('.github/workflows/actions-scripts/notifyReviewReminder');
-            await script(context);
+            const prs = await octokit.pulls.list({
+              owner: repo.owner,
+              repo: repo.repo,
+              state: state,
+              labels: labels.join(","),
+            });
+
+            const unapprovedPrs = prs.data.filter(pr => pr.requested_reviewers.length < 2);
+            const prUrls = unapprovedPrs.map(pr => pr.html_url).join("\n");
+
+            const message = `Unapproved Pull Requests:\n${prUrls}`;
+            const response = await fetch(process.env.SLACK_WEBHOOK_URL, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ text: message }),
+            });
+
+            if (!response.ok) {
+              throw new Error(`Failed to send message to Slack: ${response.statusText}`);
+            }
+
+            console.log(`${unapprovedPrs.length}件のプルリクエストについて通知しました`);
+          } else {
+            console.log("通知対象のプルリクエストはありません");
+          }
