@@ -2,6 +2,7 @@ module.exports = async (github, context) => {
     const repo = context.repo;
     const labels = [process.env.REQUEST_REVIEW_LABEL];
     const state = "open";
+
     const prs = await github.rest.pulls.list({
         owner: repo.owner,
         repo: repo.repo,
@@ -37,17 +38,20 @@ module.exports = async (github, context) => {
     }
 
     // PRの情報を整形
-    const prDetails = unapprovedPrs.map(pr => {
-        return `• ${pr.html_url} #${pr.number}: ${pr.title} by ${pr.user.login}`;
-    }).join("\n");
+    const prefix = `:インフォメーション: ${repo.repo} PR状況のお知らせ :ご案内:`;
+    let prDetails = "";
+    let message = "レビュー待ちのプルリクエストはありません";
 
     if (unapprovedPrs.length > 0) {
+        prDetails = unapprovedPrs.map(pr => {
+            return `- ${pr.html_url} ${pr.title} by ${pr.user.name}`;
+        }).join("\n");
+        message = `2名未満のPRをお知らせします:\n${prDetails}`;
         console.log(`${unapprovedPrs.length}件のプルリクエストについて通知します`);
     } else {
         console.log("通知対象のプルリクエストはありません");
-        return;
     }
-    const message = `Unapproved Pull Requests:\n${prDetails}`;
+    
     const response = await fetch(process.env.SLACK_WEBHOOK_URL, {
         method: "POST",
         headers: {
