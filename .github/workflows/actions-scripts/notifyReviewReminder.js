@@ -9,14 +9,14 @@ module.exports = async (github, context) => {
         labels: targetLabel,
     });
 
-    // 各PRのレビュー状態を確認
+    // 各PRで未承認かつレビュー待ち状態かを確認
     const unapprovedPrs = [];
     for (const pr of prs.data) {
         // PRのラベルを確認
-        // const prLabels = pr.labels.map(label => label.name);
-        // if (!prLabels.includes("reviewing")) {
-        //     continue;
-        // }
+        const prLabels = pr.labels.map(label => label.name);
+        if (!prLabels.includes(targetLabel)) {
+            continue;
+        }
 
         // レビュー情報を取得
         const reviews = await github.rest.pulls.listReviews({
