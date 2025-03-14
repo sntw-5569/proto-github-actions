@@ -38,13 +38,13 @@ module.exports = async (github, context) => {
     }
 
     // PRの情報を整形
-    const prefix = `ℹ️ ${repo.repo} PR状況のお知らせ 💁\n`;
+    const prefix = `ℹ️ ${repo.repo} PR状況のお知らせ 💁\n\n`;
     let prDetails = "";
     let message = `${prefix}レビュー待ちのプルリクエストはありません :無人島:`;
 
     if (unapprovedPrs.length > 0) {
         prDetails = unapprovedPrs.map(pr => {
-            return ` <${pr.html_url} ${pr.title}> by (${pr.user.login})`;
+            return ` <${pr.html_url}|${pr.title}> by (${pr.user.login})`;
         }).join("\n");
         message = `${prefix}⚠️ 承認者2名未満のPR\n${prDetails}`;
         console.log(`${unapprovedPrs.length}件のプルリクエストについて通知します`);
