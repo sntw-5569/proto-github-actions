@@ -13,10 +13,10 @@ module.exports = async (github, context) => {
     const unapprovedPrs = [];
     for (const pr of prs.data) {
         // PRのラベルを確認
-        const prLabels = pr.labels.map(label => label.name);
-        if (!prLabels.includes("reviewing")) {
-            continue;
-        }
+        // const prLabels = pr.labels.map(label => label.name);
+        // if (!prLabels.includes("reviewing")) {
+        //     continue;
+        // }
 
         // レビュー情報を取得
         const reviews = await github.rest.pulls.listReviews({
