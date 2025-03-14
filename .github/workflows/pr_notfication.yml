@@ -31,6 +31,11 @@ jobs:
             const unapprovedPrs = prs.data.filter(pr => pr.requested_reviewers.length < 2);
             const prUrls = unapprovedPrs.map(pr => pr.html_url).join("\n");
 
+            if (unapprovedPrs.length > 0) {
+              console.log(`${unapprovedPrs.length}件のプルリクエストについて通知しました`);
+            } else {
+              console.log("通知対象のプルリクエストはありません");
+            }
             const message = `Unapproved Pull Requests:\n${prUrls}`;
             const response = await fetch(process.env.SLACK_WEBHOOK_URL, {
               method: "POST",
@@ -43,8 +48,3 @@ jobs:
             if (!response.ok) {
               throw new Error(`Failed to send message to Slack: ${response.statusText}`);
             }
-
-            console.log(`${unapprovedPrs.length}件のプルリクエストについて通知しました`);
-          } else {
-            console.log("通知対象のプルリクエストはありません");
-          }
