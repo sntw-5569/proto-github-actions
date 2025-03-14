@@ -38,15 +38,15 @@ module.exports = async (github, context) => {
     }
 
     // PRの情報を整形
-    const prefix = `:インフォメーション: ${repo.repo} PR状況のお知らせ :ご案内:`;
+    const prefix = `:インフォメーション: ${repo.repo} PR状況のお知らせ :ご案内:\n`;
     let prDetails = "";
-    let message = "レビュー待ちのプルリクエストはありません";
+    let message = `${prefix}レビュー待ちのプルリクエストはありません :無人島:`;
 
     if (unapprovedPrs.length > 0) {
         prDetails = unapprovedPrs.map(pr => {
-            return `- ${pr.html_url} ${pr.title} by ${pr.user.name}`;
+            return ` ${pr.html_url} ${pr.title} by ${pr.user.avatar_url} (${pr.user.id})`;
         }).join("\n");
-        message = `2名未満のPRをお知らせします:\n${prDetails}`;
+        message = `${prefix}:警告: 承認者2名未満のPR\n${prDetails}`;
         console.log(`${unapprovedPrs.length}件のプルリクエストについて通知します`);
     } else {
         console.log("通知対象のプルリクエストはありません");
