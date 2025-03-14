@@ -58,7 +58,7 @@ module.exports = async (github, context) => {
             "Content-Type": "application/json",
         },
         body: JSON.stringify({
-            text: "未承認PRが" + unapprovedPrs.length > 0 ? "あります" : "ありません",
+            text: "未承認PRが" + (unapprovedPrs.length > 0 ? "あります" : "ありません"),
             blocks: [
                 {
                     type: "section",
