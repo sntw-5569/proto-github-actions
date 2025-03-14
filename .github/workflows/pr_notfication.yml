@@ -1,0 +1,41 @@
+name: PR Notification
+
+on:
+  schedule:
+    - cron: "0 10 * * 1-5"  # 平日の午前10時に実行
+  workflow_dispatch:  # 手動実行
+
+jobs:
+  notify-slack:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get PR List
+        id: get-pr
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const prs = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open'
+            });
+            
+            const needsReview = prs.data.filter(pr => {
+              return pr.reviews?.length < 2;
+            });
+            
+            const prList = needsReview.map(pr => {
+              return `• ${pr.title} - ${pr.html_url}`;
+            }).join('\n');
+            
+            core.setOutput('pr-list', prList);
+
+      - name: Send to Slack
+        uses: actionsflow/axios@v1
+        with:
+          url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          method: POST
+          body: |
+            {
+              "text": "テスト送信です。"
+            }
